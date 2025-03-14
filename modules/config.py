@@ -1,6 +1,6 @@
 # config.py
-BOT_NAME = "Ricin"
-BOT_TOKEN = "6334315676:AAGdvwMNOBNnYVtD0mpeb8ZVmiBMupXzdy4"
-API_ID = 21565925
-API_HASH = "7f45d2c2ea2d654d8cff7e7fd9eaf5c1"
+BOT_NAME = "Drm"
+BOT_TOKEN = "7752183423:AAFLx0H3FiOVs7QhMfhQKKjysBWN5rW0EJw"
+API_ID = 21705536
+API_HASH = "c5bb241f6e3ecf33fe68a444e288de2d"
 MONGO_URI = "mongodb+srv://Ricin:x8ErVo1DSSzuggqx@ricin.dudgw.mongodb.net/?retryWrites=true&w=majority&appName=Ricin"
