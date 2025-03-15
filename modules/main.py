@@ -31,6 +31,7 @@ from pytube import Playlist  #Youtube Playlist Extractor
 from yt_dlp import YoutubeDL
 import yt_dlp as youtube_dl
 import cloudscraper
+from pywidevine import WidevineCDM
 # Initialize bot
 bot = Client("bot",
              bot_token=BOT_TOKEN,
