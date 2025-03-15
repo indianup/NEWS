@@ -23,15 +23,15 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQ
 from bs4 import BeautifulSoup
 from logs import get_last_two_minutes_logs
 import tempfile
-from db import get_collection, save_name, load_name, save_log_channel_id, load_log_channel_id, save_authorized_users, load_authorized_users, load_allowed_channel_ids, save_allowed_channel_ids, load_accept_logs, save_accept_logs # Import the database functions
+from db import get_collection, save_name, load_name, save_log_channel_id, load_log_channel_id, save_authorized_users, load_authorized_users, load_allowed_channel_ids, save_allowed_channel_ids, load_accept_logs, save_accept_logs
 from db import save_bot_running_time, load_bot_running_time, reset_bot_running_time, save_max_running_time, load_max_running_time
 from db import save_queue_file, load_queue_file
 from PIL import Image
-from pytube import Playlist  #Youtube Playlist Extractor
+from pytube import Playlist
 from yt_dlp import YoutubeDL
 import yt_dlp as youtube_dl
 import cloudscraper
-from pywidevine import WidevineCDM
+
 # Initialize bot
 bot = Client("bot",
              bot_token=BOT_TOKEN,
@@ -40,6 +40,7 @@ bot = Client("bot",
 
 # Get the MongoDB collection for this bot
 collection = get_collection(BOT_NAME, MONGO_URI)
+
 # Constants
 OWNER_IDS = [1147534909]  # Replace with the actual owner user IDs
 
@@ -67,7 +68,6 @@ def load_initial_data():
     ALLOWED_CHANNEL_IDS = load_allowed_channel_ids(collection)
     my_name = load_name(collection)
     accept_logs = load_accept_logs(collection)
-    # Load bot running time and max running time
     total_running_time = load_bot_running_time(collection)
     max_running_time = load_max_running_time(collection)
     file_queue = load_queue_file(collection)
@@ -86,10 +86,8 @@ auth_or_owner_filter = filters.create(lambda _, __, m: auth_user_filter(_, __, m
 auth_owner_channel_filter = filters.create(lambda _, __, m: auth_user_filter(_, __, m) or owner_filter(_, __, m) or channel_filter(_, __, m))
 owner_or_channel_filter = filters.create(lambda _, __, m: owner_filter(_, __, m) or channel_filter(_, __, m))
 
-
 #===================== Callback query handler ===============================
 
-# Callback query handler for help button
 @bot.on_callback_query(filters.regex("help") & auth_or_owner_filter)
 async def help_callback(client: Client, query: CallbackQuery):
     await help_command(client, query.message)
@@ -181,7 +179,6 @@ async def show_channels(client: Client, message: Message):
         await message.reply(f"Allowed channels:\n{channels_list}")
     else:
         await message.reply("No channels are currently allowed.")
-
 
 # Add Chat Callback
 @bot.on_callback_query(filters.regex("add_chat") & auth_or_owner_filter)
@@ -291,8 +288,6 @@ async def watermark_command(client: Client, message: Message):
 
 # Function to check if an image has transparency
 def has_transparency(image_path):
-    # Implement logic to check for transparency
-    # For example, using PIL library:
     from PIL import Image
     try:
         image = Image.open(image_path)
@@ -304,15 +299,11 @@ def has_transparency(image_path):
 
 # Function to convert image to PNG format
 async def convert_to_png(image_path):
-    # Implement logic to convert image to PNG format
-    # For example, using PIL library:
     from PIL import Image
     try:
         image = Image.open(image_path)
-        # Create a new image with an alpha channel (transparency)
         new_image = Image.new("RGBA", image.size)
         new_image.paste(image, (0, 0), image)
-        # Save the image as PNG
         png_path = image_path.replace(".jpg", ".png")
         new_image.save(png_path)
         return png_path
@@ -421,7 +412,6 @@ async def start(client: Client, msg: Message):
         )
 
 @bot.on_message(filters.command(["stop"]) & auth_or_owner_filter)
-#@bot.on_message(filters.command("stop"))
 async def stop_handler(_, message):
     global bot_running, start_time
     if bot_running:
@@ -434,9 +424,7 @@ async def stop_handler(_, message):
 
 #----clean command for bot to clean m3u8 and perospero----
 
-
 def natural_sort_key(s):
-    """Key function to sort text in a human-readable way (natural sort)."""
     return [int(text) if text.isdigit() else text.lower() for text in re.split('(\d+)', s)]
 
 @bot.on_message(filters.command('cl'))
@@ -523,12 +511,10 @@ async def owner_command(bot: Client, message: Message):
     global OWNER_TEXT
     await message.reply_text(OWNER_TEXT)
 
-
 # Help command handler
 @bot.on_message(filters.command("help") & auth_owner_channel_filter)
 async def help_command(client: Client, message: Message):
     await message.reply(help_text, reply_markup=keyboard)
-
 
 #=================== TELEGRAM ID INFORMATION =============
 
@@ -548,7 +534,6 @@ async def info(bot: Client, update: Message):
         disable_web_page_preview=True,
         reply_markup=BUTTONS
     )
-
 
 @bot.on_message(filters.private & filters.command("id"))
 async def id(bot: Client, update: Message):
@@ -775,7 +760,6 @@ async def set_max_running_time_handler(_, message):
         await message.reply_text(f"🔄 Max bot running time set to {max_time / 3600:.2f} hours")
     else:
         await message.reply_text("❌ Invalid command. Use /set_max_running_time <hours>")
-
 
 #=================== TXT CALLING COMMAND ==========================
 
@@ -1400,7 +1384,6 @@ async def process_links(bot, m, links, b_name, count, end_count, raw_text2, res,
         await bot.send_message(log_channel_id, f"{end_message}")
     await m.reply_text("That's it ❤️")
 
-
 #===================== TEXT MESSAGES THAT BOT WILL SEND ===============
 
 help_text = """
@@ -1413,19 +1396,7 @@ help_text = """
 
 2. **/add_channel `<-100channelid>`** - ➕ Add a channel to the allowed channels list.
 
- **Example:**
- ```
- /add_channel -100973847334
- ```
-OR Use /add_chat 
-
 3. **/remove_channel `<-100channelid>`** - ➖ Remove a channel from the allowed channels list.
-
- **Example:**
- ```
- /remove_channel -1003947384
- ```
-OR Use /remove_chat
 
 🚀 **General Commands:**
 
@@ -1470,11 +1441,6 @@ OWNER_TEXT = """
 
 1. **/add_log_channel `<-100channelid>`** - 📁 Set the log channel ID.
 
-**Example:**
-```
-/add_log_channel -10054567890
-```
-
 2. **/accept_logs** - 📥 Set this to **1** if you want the backup.
 
 3. **/logs** - 📝 Send the logs from the last two minutes.
@@ -1483,48 +1449,17 @@ OWNER_TEXT = """
 
 5. **/name** - 🏷️ Set a custom name that you want to display before the file extension.
 
-**Example:**
-```
-/name yourname
-```
-
-🔒 **Authorized Users Commands:**
-
 6. **/auth_users** - 👥 Display the list of authorized users.
 
 7. **/add_auth `<userID>`** - ➕ Add a user to the authorized users list.
 
-**Example:**
-```
-/add_auth 3495890
-```
-
 8. **/remove_auth `<userID>`** - ➖ Remove a user from the authorized users list.
-
-**Example:**
-```
-/remove_auth 3957994
-```
-
-🔑 **Allowed Channels Commands:**
 
 9. **/show_channels** - 📺 Display the list of allowed channels.
 
 10. **/add_channel `<-100channelid>`** - ➕ Add a channel to the allowed channels list.
 
- **Example:**
- ```
- /add_channel -100973847334
- ```
-
 11. **/remove_channel `<-100channelid>`** - ➖ Remove a channel from the allowed channels list.
-
- **Example:**
- ```
- /remove_channel -1003947384
- ```
-
-🚀 **General Commands:**
 
 12. **/ricin** - 💡 Type this before sending your **📃.txt** file.
 
@@ -1562,7 +1497,6 @@ Feel free to contact @siteofhacking for further assistance or subscription detai
 
 """
 
-
 #============== Load initial data on startup =========================
 load_initial_data()
 
@@ -1570,25 +1504,24 @@ load_initial_data()
 
 #========== Button showed on start command ==========
 help_button_keyboard = InlineKeyboardMarkup(
-    [
-        [
-            InlineKeyboardButton("Help", callback_data="help"),
-        ]
-    ]
+   [
+       [
+           InlineKeyboardButton("Help", callback_data="help"),
+       ]
+   ]
 )
-
 
 #========== Button showed on help command =============
 
 # Inline keyboard
 keyboard = InlineKeyboardMarkup(
-    [
-        [
-            InlineKeyboardButton("Add Chat", callback_data="add_chat"),
-            InlineKeyboardButton("Remove Chat", callback_data="remove_chat"),
-            InlineKeyboardButton("Show Channels", callback_data="show_channels"),
-        ]
-    ]
+   [
+       [
+           InlineKeyboardButton("Add Chat", callback_data="add_chat"),
+           InlineKeyboardButton("Remove Chat", callback_data="remove_chat"),
+           InlineKeyboardButton("Show Channels", callback_data="show_channels"),
+       ]
+   ]
 )
 
 #================== id command button ===========================
